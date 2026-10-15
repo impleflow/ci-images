@@ -1,0 +1,7 @@
+# Keeps the GitHub Actions used in the workflow up to date (base images are refreshed by a manual rebuild).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

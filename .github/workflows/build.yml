@@ -1,0 +1,89 @@
+# Builds the images from the dev-*/ directories and publishes them to ghcr.io/impleflow/<directory>.
+# push to main     - only images whose directory changed (all of them if this workflow changed)
+# pull_request     - same selection, build only (no push)
+# manual           - all images (refresh of the base image and dependencies); no schedule on purpose:
+#                    the images only run validation jobs without internet access
+name: build
+
+on:
+  push:
+    branches: [main]
+    paths: ["dev-*/**", ".github/workflows/build.yml"]
+  pull_request:
+    paths: ["dev-*/**", ".github/workflows/build.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      images: ${{ steps.select.outputs.images }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: select
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          all=$(ls -d dev-*/ | tr -d /)
+          if [ "$EVENT" = push ] || [ "$EVENT" = pull_request ]; then
+            if [ -z "$BASE" ] || [ "$BASE" = 0000000000000000000000000000000000000000 ]; then
+              images=$all
+            else
+              changed=$(git diff --name-only "$BASE" HEAD)
+              if echo "$changed" | grep -qx '.github/workflows/build.yml'; then
+                images=$all
+              else
+                images=$(echo "$changed" | grep -o '^dev-[^/]*' | sort -u | while read -r d; do [ -f "$d/Dockerfile" ] && echo "$d"; done)
+              fi
+            fi
+          else
+            images=$all
+          fi
+          echo "images=$(printf '%s\n' $images | jq -Rnc '[inputs | select(length > 0)]')" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: detect
+    if: needs.detect.outputs.images != '[]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ${{ fromJSON(needs.detect.outputs.images) }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: version
+        env:
+          IMAGE: ${{ matrix.image }}
+        run: echo "version=$(tr -d '[:space:]' < "$IMAGE/VERSION")" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-buildx-action@v3
+      - if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
+          tags: |
+            type=raw,value=${{ steps.version.outputs.version }}
+            type=raw,value=${{ steps.version.outputs.version }}-{{date 'YYYYMMDD'}}
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.image }}
+          platforms: linux/amd64
+          pull: true
+          no-cache: true
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

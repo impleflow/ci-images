@@ -1,0 +1,7 @@
+# Runtime dependencies
+PyYAML>=6.0
+
+# Tests and formatting/linting
+pytest>=8.0
+ruff>=0.6
+editorconfig-checker>=3.2   # `ec` - formatting check against .editorconfig
