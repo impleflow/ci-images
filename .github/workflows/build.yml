@@ -22,7 +22,7 @@ jobs:
     outputs:
       images: ${{ steps.select.outputs.images }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - id: select
@@ -59,7 +59,7 @@ jobs:
       matrix:
         image: ${{ fromJSON(needs.detect.outputs.images) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - id: version
         env:
           IMAGE: ${{ matrix.image }}
