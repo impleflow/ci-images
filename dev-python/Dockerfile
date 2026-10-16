@@ -1,4 +1,4 @@
-FROM python:3.13
+FROM python:3.13-slim
 
 LABEL org.opencontainers.image.source="https://github.com/impleflow/ci-images" \
       org.opencontainers.image.description="Python 3.13 + PyYAML, pytest, ruff and editorconfig-checker for offline CI" \
