@@ -1,4 +1,4 @@
-FROM eclipse-temurin:25-jdk
+FROM eclipse-temurin:25-jdk-alpine
 
 LABEL org.opencontainers.image.source="https://github.com/impleflow/ci-images" \
       org.opencontainers.image.description="Eclipse Temurin 25 JDK + google-java-format and SpotBugs for offline CI" \
