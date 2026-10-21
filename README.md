@@ -6,8 +6,8 @@ Images are published to `ghcr.io/impleflow/<directory>`.
 
 | Image | Base | Contents |
 |-------|------|----------|
-| `dev-java` | `eclipse-temurin:25-jdk-alpine` | google-java-format, SpotBugs |
-| `dev-python` | `python:3.14-slim` | PyYAML, pytest, ruff, editorconfig-checker |
-| `dev-shell` | `alpine:3.24` | bash, ShellCheck, shfmt |
+| `dev-java` | `eclipse-temurin:25-jdk-alpine` | google-java-format (1.37.0), SpotBugs (4.10.5) |
+| `dev-python` | `python:3.14-slim` | PyYAML (>= 6.0.3), pytest (>= 9.1), ruff (>= 0.17), editorconfig-checker (>= 3.11) |
+| `dev-shell` | `alpine:3.24` | bash (5.3.9), ShellCheck (0.11.0), shfmt (3.13.1) |
 
-Tool versions are pinned in each `Dockerfile` (Java) or `requirements.txt` (Python). In `dev-shell` they are set by the Alpine release (the tag is the Alpine version). The Java tool versions must match the ones used in the consuming projects' `.gitlab-ci.yml`.
+
