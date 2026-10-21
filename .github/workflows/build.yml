@@ -64,6 +64,16 @@ jobs:
         env:
           IMAGE: ${{ matrix.image }}
         run: echo "version=$(tr -d '[:space:]' < "$IMAGE/VERSION")" >> "$GITHUB_OUTPUT"
+      # dev-java is additionally tagged with the version of each tool it contains (from the Dockerfile ARGs),
+      # because the CI jobs use the tools independently and each pins only its own
+      - id: tools
+        if: matrix.image == 'dev-java'
+        run: |
+          gjf=$(sed -n 's/^ARG GJF_VERSION=//p' dev-java/Dockerfile)
+          spotbugs=$(sed -n 's/^ARG SPOTBUGS_VERSION=//p' dev-java/Dockerfile)
+          [ -n "$gjf" ] && [ -n "$spotbugs" ] || { echo "tool versions not found in dev-java/Dockerfile" >&2; exit 1; }
+          echo "gjf=$gjf" >> "$GITHUB_OUTPUT"
+          echo "spotbugs=$spotbugs" >> "$GITHUB_OUTPUT"
       - uses: docker/setup-buildx-action@v4
       - if: github.event_name != 'pull_request'
         uses: docker/login-action@v4
@@ -78,6 +88,8 @@ jobs:
           tags: |
             type=raw,value=${{ steps.version.outputs.version }}
             type=raw,value=${{ steps.version.outputs.version }}-{{date 'YYYYMMDD'}}
+            type=raw,value=${{ steps.version.outputs.version }}-gjf${{ steps.tools.outputs.gjf }},enable=${{ matrix.image == 'dev-java' }}
+            type=raw,value=${{ steps.version.outputs.version }}-spotbugs${{ steps.tools.outputs.spotbugs }},enable=${{ matrix.image == 'dev-java' }}
       - uses: docker/build-push-action@v7
         with:
           context: ${{ matrix.image }}
