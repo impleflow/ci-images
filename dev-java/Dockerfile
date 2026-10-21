@@ -7,8 +7,8 @@ LABEL org.opencontainers.image.source="https://github.com/impleflow/ci-images" \
 # Versions must match GJF_VERSION / SPOTBUGS_VERSION in the projects' .gitlab-ci.yml.
 # The version is part of the file name, so a job can check that the image has the version it requires.
 # The base image has no curl - files are fetched by ADD.
-ARG GJF_VERSION=1.36.0
-ARG SPOTBUGS_VERSION=4.10.4
+ARG GJF_VERSION=1.37.0
+ARG SPOTBUGS_VERSION=4.10.5
 
 ADD --chmod=644 "https://github.com/google/google-java-format/releases/download/v${GJF_VERSION}/google-java-format-${GJF_VERSION}-all-deps.jar" \
     /opt/tools/google-java-format-${GJF_VERSION}-all-deps.jar
