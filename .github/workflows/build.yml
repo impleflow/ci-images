@@ -94,7 +94,6 @@ jobs:
           images: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
           tags: |
             type=raw,value=${{ steps.version.outputs.version }}
-            type=raw,value=${{ steps.version.outputs.version }}-{{date 'YYYYMMDD'}}
             type=raw,value=${{ steps.version.outputs.version }}-gjf${{ steps.java.outputs.gjf }},enable=${{ matrix.image == 'dev-java' }}
             type=raw,value=${{ steps.version.outputs.version }}-spotbugs${{ steps.java.outputs.spotbugs }},enable=${{ matrix.image == 'dev-java' }}
             type=raw,value=${{ steps.version.outputs.version }}-xmllint${{ steps.xml.outputs.xmllint }},enable=${{ matrix.image == 'dev-xml' }}
@@ -104,6 +103,19 @@ jobs:
           platforms: linux/amd64
           pull: true
           no-cache: true
+          # without attestations a single-platform push is one plain manifest (no index with untagged children),
+          # which keeps the untagged-version cleanup below safe
+          provenance: false
+          sbom: false
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+      # moving a tag leaves the previous image untagged; remove those so each tag has exactly one build.
+      # Images that still carry any tag (e.g. an older tool-version tag) are never touched.
+      - if: github.event_name != 'pull_request'
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: ${{ matrix.image }}
+          package-type: container
+          delete-only-untagged-versions: true
+          min-versions-to-keep: 0
