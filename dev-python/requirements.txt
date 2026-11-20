@@ -1,5 +1,7 @@
 # Runtime dependencies
 PyYAML>=6.0.3
+requests>=2.32  
+paramiko>=3.4  
 
 # Tests and formatting/linting
 pytest>=9.1
