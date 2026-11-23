@@ -7,6 +7,7 @@ Images are published to `ghcr.io/impleflow/<directory>`.
 | Image | Base | Contents |
 |-------|------|----------|
 | `dev-java` | `eclipse-temurin:25-jdk-alpine` | google-java-format (2.0.0), SpotBugs (4.10.5) |
+| `dev-playwright` | `node:22-bookworm` | Playwright Chromium (1.65.1) with its system libraries, in `/ms-playwright` (`PLAYWRIGHT_BROWSERS_PATH`). The project's `@playwright/test` version must equal the image `VERSION`. |
 | `dev-python` | `python:3.14-slim` | PyYAML (>= 6.0.3), pytest (>= 9.1), ruff (>= 0.17), editorconfig-checker (>= 3.11) |
 | `dev-shell` | `alpine:3.24` | bash (5.3.9), ShellCheck (0.11.0), shfmt (3.13.1) |
 | `dev-xml` | `alpine:3.24` | xmllint (2.13.9, libxml2-utils) |
